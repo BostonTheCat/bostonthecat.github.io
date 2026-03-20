@@ -3,29 +3,117 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Rubbish Bear - Coming Soon</title>
+    <title>Rubbish Bear - Coming Soon (Interactive!)</title>
     <style>
+        /* CSS Styling */
         body {
-            font-family: sans-serif;
-            background-color: #f4f4f4;
-            text-align: center;
+            font-family: 'Courier New', Courier, monospace; /* Fits the 'rubbish' aesthetic */
+            background-color: #f0f0f0;
+            margin: 0;
+            overflow: hidden; /* Prevents scrollbars from appearing */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        /* This container is what we track the mouse over */
+        .container {
+            width: 100%;
+            height: 100%;
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
-            height: 100vh;
-            margin: 0;
+            cursor: none; /* Hides the default cursor, which enhances the effect */
         }
-        img {
-            max-width: 300px;
+
+        /* Styling for your Rubbish Bear image */
+        #rubbish-bear-img {
+            max-width: 400px; /* Adjust this to make the bear bigger or smaller */
             height: auto;
-            margin-bottom: 20px;
+            pointer-events: none; /* Prevents the image itself from interfering with the mouse detection */
+            transition: transform 0.1s ease-out; /* Smooths out the animation */
+            /* Crucial: We must set perspective on the parent to see 3D rotation */
+            perspective: 1000px;
         }
-    }
+
+        h1 {
+            margin-top: 30px;
+            font-size: 1.5rem;
+            color: #333;
+        }
+
+        /* Optional: Add a simple custom cursor that is 'rubbish' themed, like a small paper ball or just a dot */
+        .custom-cursor {
+            width: 10px;
+            height: 10px;
+            background-color: #333;
+            border-radius: 50%;
+            position: absolute;
+            pointer-events: none;
+            z-index: 100; /* Ensures it's always on top */
+            display: none; /* Initially hidden until the mouse moves */
+        }
     </style>
 </head>
 <body>
-    <img src="logo.png" alt="Rubbish Bear Logo">
-    <h1>Our new website is coming soon!</h1>
+
+    <div class="custom-cursor" id="cursor"></div>
+
+    <div class="container" id="tracking-container">
+        <img src="logo.png" alt="Rubbish Bear" id="rubbish-bear-img">
+        <h1>...is coming soon</h1>
+    </div>
+
+    <script>
+        // JavaScript Logic
+        const container = document.getElementById('tracking-container');
+        const bearImage = document.getElementById('rubbish-bear-img');
+        const customCursor = document.getElementById('cursor');
+
+        // This controls how intense the tilt is. Lower = more intense.
+        const tiltIntensity = 15;
+
+        // Function to update the custom cursor position
+        function updateCursor(e) {
+            customCursor.style.display = 'block'; // Show it now that the mouse is moving
+            customCursor.style.left = `${e.clientX}px`;
+            customCursor.style.top = `${e.clientY}px`;
+        }
+
+        // The core 'mouse follow' function
+        container.addEventListener('mousemove', (e) => {
+            // 1. Update the custom cursor
+            updateCursor(e);
+
+            // 2. Get the dimensions of the screen and the container
+            const containerWidth = container.offsetWidth;
+            const containerHeight = container.offsetHeight;
+
+            // 3. Get the absolute position of the mouse from the top-left of the container
+            const mouseX = e.offsetX;
+            const mouseY = e.offsetY;
+
+            // 4. Calculate the mouse position relative to the *center* of the container (-0.5 to 0.5)
+            const centerX = (mouseX / containerWidth - 0.5);
+            const centerY = (mouseY / containerHeight - 0.5);
+
+            // 5. Calculate the tilt amount using the relative position and intensity
+            // Flipping the values for Y makes the image tilt correctly.
+            const tiltX = (centerY * tiltIntensity).toFixed(2);
+            const tiltY = -(centerX * tiltIntensity).toFixed(2);
+
+            // 6. Apply the transformation to the image using CSS 'perspective' and 'rotate3d'
+            bearImage.style.transform = `rotateX(${tiltX}deg) rotateY(${tiltY}deg)`;
+        });
+
+        // Optional: Reset the image when the mouse leaves the container area
+        container.addEventListener('mouseleave', () => {
+            bearImage.style.transform = 'rotateX(0deg) rotateY(0deg)';
+            customCursor.style.display = 'none'; // Hide the custom cursor
+        });
+
+    </script>
 </body>
 </html>
