@@ -2,118 +2,136 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Rubbish Bear - Coming Soon (Interactive!)</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Rubbish Bear - Coming Soon</title>
     <style>
-        /* CSS Styling */
-        body {
-            font-family: 'Courier New', Courier, monospace; /* Fits the 'rubbish' aesthetic */
-            background-color: #f0f0f0;
+        /* 1. Root Setup */
+        html, body {
+            height: 100%;
             margin: 0;
-            overflow: hidden; /* Prevents scrollbars from appearing */
+            padding: 0;
+            background-color: #f0f0f0;
+            font-family: 'Courier New', Courier, monospace;
+            overflow: hidden; 
+            width: 100%;
+        }
+
+        body {
             display: flex;
             justify-content: center;
             align-items: center;
-            height: 100vh;
+            height: 100dvh; 
         }
 
-        /* This container is what we track the mouse over */
+        /* 2. Content Container */
         .container {
-            width: 100%;
-            height: 100%;
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
-            cursor: none; /* Hides the default cursor, which enhances the effect */
+            text-align: center;
+            width: 100%;
+            height: 100%;
+            padding: 20px;
+            box-sizing: border-box;
         }
 
-        /* Styling for your Rubbish Bear image */
-        #rubbish-bear-img {
-            max-width: 400px; /* Adjust this to make the bear bigger or smaller */
-            height: auto;
-            pointer-events: none; /* Prevents the image itself from interfering with the mouse detection */
-            transition: transform 0.1s ease-out; /* Smooths out the animation */
-            /* Crucial: We must set perspective on the parent to see 3D rotation */
+        /* 3. The Logo Stack */
+        .logo-wrapper {
+            display: flex;
+            flex-direction: column; /* Keeps text UNDER logo */
+            align-items: center;    /* Centers them horizontally */
+            justify-content: center;
             perspective: 1000px;
+            width: 100%;
+            max-height: 70vh;       /* Limits the total height of the image stack */
+        }
+
+        #rubbish-bear-img {
+            display: block;
+            width: auto;
+            max-width: 80%;         /* Limits width on desktop/mobile */
+            max-height: 45vh;       /* Shrinks if window height is too small */
+            height: auto;
+            pointer-events: none;
+            transition: transform 0.1s ease-out;
+            object-fit: contain;
+        }
+
+        #rubbish-bear-text {
+            display: block;
+            width: auto;
+            max-width: 70%; 
+            max-height: 15vh;       /* Shrinks if window height is too small */
+            height: auto;
+            margin-top: 20px;       /* Space between logo and text image */
+            object-fit: contain;
         }
 
         h1 {
-            margin-top: 30px;
-            font-size: 1.5rem;
+            margin-top: 20px;
+            font-size: clamp(1rem, 3vh, 1.5rem); 
             color: #333;
+            width: 100%;
         }
 
-        /* Optional: Add a simple custom cursor that is 'rubbish' themed, like a small paper ball or just a dot */
-        .custom-cursor {
-            width: 10px;
-            height: 10px;
-            background-color: #333;
-            border-radius: 50%;
+        /* 4. Copyright Notice */
+        .copyright {
             position: absolute;
+            bottom: 15px;
+            right: 15px;
+            font-size: 0.7rem;
+            color: #888;
             pointer-events: none;
-            z-index: 100; /* Ensures it's always on top */
-            display: none; /* Initially hidden until the mouse moves */
+            text-align: right;
         }
     </style>
 </head>
 <body>
 
-    <div class="custom-cursor" id="cursor"></div>
-
     <div class="container" id="tracking-container">
-        <img src="logo.png" alt="Rubbish Bear" id="rubbish-bear-img">
+        <div class="logo-wrapper">
+            <img src="logoImage.png" alt="Rubbish Bear" id="rubbish-bear-img">
+            <img src="logoText.png" alt="Rubbish Bear Text" id="rubbish-bear-text">
+        </div>
         <h1>...is coming soon</h1>
     </div>
 
+    <div class="copyright">
+        &copy; 2026 Rubbish Bear. All rights reserved.
+    </div>
+
     <script>
-        // JavaScript Logic
         const container = document.getElementById('tracking-container');
         const bearImage = document.getElementById('rubbish-bear-img');
-        const customCursor = document.getElementById('cursor');
+        const tiltIntensity = 20;
 
-        // This controls how intense the tilt is. Lower = more intense.
-        const tiltIntensity = 15;
+        const handleMove = (e) => {
+            const rect = document.body.getBoundingClientRect();
+            
+            const x = e.clientX || (e.touches && e.touches[0].clientX);
+            const y = e.clientY || (e.touches && e.touches[0].clientY);
 
-        // Function to update the custom cursor position
-        function updateCursor(e) {
-            customCursor.style.display = 'block'; // Show it now that the mouse is moving
-            customCursor.style.left = `${e.clientX}px`;
-            customCursor.style.top = `${e.clientY}px`;
-        }
+            if (x === undefined || y === undefined) return;
 
-        // The core 'mouse follow' function
-        container.addEventListener('mousemove', (e) => {
-            // 1. Update the custom cursor
-            updateCursor(e);
+            const mouseX = x - rect.left;
+            const mouseY = y - rect.top;
 
-            // 2. Get the dimensions of the screen and the container
-            const containerWidth = container.offsetWidth;
-            const containerHeight = container.offsetHeight;
+            const centerX = (mouseX / rect.width - 0.5);
+            const centerY = (mouseY / rect.height - 0.5);
 
-            // 3. Get the absolute position of the mouse from the top-left of the container
-            const mouseX = e.offsetX;
-            const mouseY = e.offsetY;
-
-            // 4. Calculate the mouse position relative to the *center* of the container (-0.5 to 0.5)
-            const centerX = (mouseX / containerWidth - 0.5);
-            const centerY = (mouseY / containerHeight - 0.5);
-
-            // 5. Calculate the tilt amount using the relative position and intensity
-            // Flipping the values for Y makes the image tilt correctly.
             const tiltX = (centerY * tiltIntensity).toFixed(2);
             const tiltY = -(centerX * tiltIntensity).toFixed(2);
 
-            // 6. Apply the transformation to the image using CSS 'perspective' and 'rotate3d'
             bearImage.style.transform = `rotateX(${tiltX}deg) rotateY(${tiltY}deg)`;
-        });
+        };
 
-        // Optional: Reset the image when the mouse leaves the container area
-        container.addEventListener('mouseleave', () => {
+        window.addEventListener('mousemove', handleMove);
+        window.addEventListener('touchmove', (e) => { handleMove(e); }, { passive: true });
+
+        window.addEventListener('mouseleave', () => {
             bearImage.style.transform = 'rotateX(0deg) rotateY(0deg)';
-            customCursor.style.display = 'none'; // Hide the custom cursor
         });
-
     </script>
 </body>
 </html>
