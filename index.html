@@ -114,14 +114,14 @@
 
             if (x === undefined || y === undefined) return;
 
-            const mouseX = x - rect.left;
-            const mouseY = y - rect.top;
+            const mouseX = x - (rect.left + rect.width / 2);
+            const mouseY = y - (rect.top + rect.height / 2);
 
-            const centerX = (mouseX / rect.width - 0.5);
-            const centerY = (mouseY / rect.height - 0.5);
+            const centerX = (mouseX / rect.width);
+            const centerY = (mouseY / rect.height);
 
-            const tiltX = (centerY * tiltIntensity).toFixed(2);
-            const tiltY = -(centerX * tiltIntensity).toFixed(2);
+            const tiltX = -(centerY * tiltIntensity).toFixed(2);
+            const tiltY = (centerX * tiltIntensity).toFixed(2);
 
             bearImage.style.transform = `rotateX(${tiltX}deg) rotateY(${tiltY}deg)`;
         };
